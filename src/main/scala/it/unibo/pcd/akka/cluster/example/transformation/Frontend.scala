@@ -50,7 +50,7 @@ object Frontend:
             Behaviors.same
           } else {
             // how much time can pass before we consider a request failed
-            implicit val timeout: Timeout = 5.seconds
+            given Timeout = 5.seconds
             val selectedWorker = workers(jobCounter % workers.size)
             ctx.log.info("Sending work for processing to {}", selectedWorker)
             val text = s"hello-$jobCounter"
