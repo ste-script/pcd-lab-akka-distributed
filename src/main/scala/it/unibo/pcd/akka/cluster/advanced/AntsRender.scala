@@ -7,8 +7,8 @@ import akka.actor.typed.scaladsl.*
 import akka.actor.typed.scaladsl.adapter.*
 import akka.actor.typed.{ActorRef, ActorSystem, Behavior}
 import it.unibo.pcd.akka.Message
-import concurrent.duration.DurationInt
 
+import concurrent.duration.{DurationInt, FiniteDuration}
 import scala.language.postfixOps
 
 object AntsRender:
@@ -17,13 +17,13 @@ object AntsRender:
   val height = 600
   sealed trait Command
   final case class Render(x: Int, y: Int, id: ActorRef[_]) extends Message with Command
-  private case object Flush extends Command // Private message (similar to private method in OOP)
+  private case object Flush extends Command // Private message (similar to a private method in OOP)
   val Service = ServiceKey[Render]("RenderService")
-  def apply(): Behavior[Command] = {
+  def apply(frameRate: Double = 60): Behavior[Command] = {
     Behaviors.setup { ctx =>
       val frontendGui = SimpleGUI(width, height) // init the gui
       Behaviors.withTimers { timers =>
-        timers.startTimerAtFixedRate(Flush, 33 milliseconds)
+        timers.startTimerAtFixedRate(Flush, ((1 / frameRate) * 1000).toInt milliseconds)
         var toRender: Map[ActorRef[_], (Int, Int)] = Map.empty
         ctx.system.receptionist ! Receptionist.Register(Service, ctx.self)
         Behaviors.receiveMessage {

@@ -4,7 +4,6 @@ import javax.swing.{JFrame, JPanel, SwingUtilities}
 import java.awt.{Canvas, Color, Dimension, Graphics}
 
 class SimpleGUI(val width: Int, val height: Int):
-  self => // self-types, used to take the val reference inside the inner class
   private val elementWidth = 10
   private val frame = JFrame()
   private val canvas = Environment()
@@ -22,8 +21,8 @@ class SimpleGUI(val width: Int, val height: Int):
 
   private class Environment() extends JPanel:
     var elements: List[(Int, Int)] = List.empty
-    override def getPreferredSize = new Dimension(self.width, self.height)
+    override def getPreferredSize = new Dimension(SimpleGUI.this.width, SimpleGUI.this.height)
     override def paintComponent(graphics: Graphics): Unit =
-      graphics.clearRect(0, 0, self.width, self.height)
+      graphics.clearRect(0, 0, SimpleGUI.this.width, SimpleGUI.this.height)
       graphics.setColor(Color.BLACK)
       elements.foreach((x, y) => graphics.drawOval(x, y, elementWidth, elementWidth))

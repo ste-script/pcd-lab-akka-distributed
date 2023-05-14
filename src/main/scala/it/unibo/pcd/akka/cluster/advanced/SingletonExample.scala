@@ -14,7 +14,7 @@ import akka.cluster.typed.SingletonActor
 import it.unibo.pcd.akka.cluster.*
 import AntsRender.*
 
-/** NB! Frontend it is not the best case to use singleton. This is an example for seeing the API & Behaviours of the
+/** NB! Frontends are not the best case to use singleton. This is an example for seeing the API & Behaviours of the
   * Singleton actor. Use when:
   *
   * 1) single point of responsibility for certain cluster-wide consistent decisions, or coordination of actions across
