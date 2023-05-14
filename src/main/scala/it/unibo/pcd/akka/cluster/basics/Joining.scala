@@ -11,20 +11,24 @@ import it.unibo.pcd.akka.cluster.*
 /** programmatic joining using another cluster ref */
 @main def join(): Unit =
   val first = startup("base-cluster-no-seed", 3521)(Behaviors.empty)
-  val clusterRefA = Cluster(first)
   val second = startup("base-cluster-no-seed", 3522)(Behaviors.empty)
-  val clusterRefB = Cluster(second)
+  val clusterRefA = Cluster(first)
   clusterRefA.manager ! Join(clusterRefA.selfMember.address)
   Thread.sleep(5000)
+  val clusterRefB = Cluster(second)
   clusterRefB.manager ! Join(clusterRefA.selfMember.address)
   Thread.sleep(5000)
+  println(clusterRefA.state) // I can read the cluster state
+  assert(clusterRefA.state == clusterRefB.state) // same state!!
   clusterRefA.manager ! Leave(clusterRefB.selfMember.address)
   Thread.sleep(5000)
   println(clusterRefA.state) // I can read the cluster state
-
+  first.terminate()
+  second.terminate()
 @main def withSeed(): Unit =
-  seeds.foreach(port => startup(port = port)(Behaviors.empty))
-
+  val systems = seeds.map(port => startup(port = port)(Behaviors.empty))
+  Thread.sleep(10000)
+  systems.foreach(_.terminate())
 // Use two (or multiple) sbt shells
 // choose one seed node (with the port)
 // connect to that cluster

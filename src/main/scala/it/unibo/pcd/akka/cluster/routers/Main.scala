@@ -26,20 +26,24 @@ object WorkerRouter:
 
 object SendRequests:
   case object Tick extends Message
-  def apply(): Behavior[Tick.type | Worker.Result] = Behaviors.withTimers { timers =>
+  def apply(): Behavior[Worker.Result] = Behaviors.withTimers { timers =>
     Behaviors.setup { ctx =>
       val router = Routers.group(WorkerRouter.workerService)
       val ref = ctx.spawn(router, "worker-router")
-      timers.startSingleTimer(Tick, 5000 milli)
-      Behaviors.receiveMessage {
-        case Tick =>
-          (10 to 20) foreach {
-            ref ! Worker.EvalFactorial(_, ctx.self)
-          }
-          Behaviors.same
-        case Worker.Result(request, result) =>
-          ctx.log.info(s"Done!! $request ! = $result")
-          Behaviors.same
+      // Wait that all workers are up
+      ctx.spawnAnonymous[Receptionist.Listing](Behaviors.setup { ctx2 =>
+        ctx2.system.receptionist ! Receptionist.Subscribe(WorkerRouter.workerService, ctx2.self)
+        Behaviors.receiveMessagePartial[Receptionist.Listing] {
+          case msg if msg.allServiceInstances(WorkerRouter.workerService).nonEmpty =>
+            (10 to 20) foreach {
+              ref ! Worker.EvalFactorial(_, ctx.self)
+            }
+            Behaviors.same
+        }
+      })
+      Behaviors.receiveMessage { case Worker.Result(request, result) =>
+        ctx.log.info(s"Done!! $request ! = $result")
+        Behaviors.same
       }
     }
   }
