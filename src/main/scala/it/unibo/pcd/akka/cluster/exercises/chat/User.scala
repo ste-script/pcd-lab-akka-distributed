@@ -4,9 +4,9 @@ import akka.actor.typed.scaladsl.Behaviors
 import akka.actor.typed.{ActorRef, ActorSystem, Behavior}
 import akka.cluster.typed.ClusterSingleton
 import com.typesafe.config.ConfigFactory
-import it.unibo.pcd.akka.cluster.exercises.chat.ChatBox.ChatBoxMessage
+import it.unibo.pcd.akka.cluster.exercises.chat.ChatBox.{ChatBoxMessage, History}
 import it.unibo.pcd.akka.cluster.exercises.chat.ChatBox.ChatBoxMessage.{GetHistory, ListenNewMessages, NewMessage}
-import it.unibo.pcd.akka.cluster.exercises.chat.User.{History, UserId, UserMessage}
+import it.unibo.pcd.akka.cluster.exercises.chat.User.{UserId, UserMessage}
 import it.unibo.pcd.akka.cluster.exercises.chat.gui.ChatboxGui
 import akka.cluster.typed.SingletonActor
 import it.unibo.pcd.akka.cluster.example.CborSerializable
@@ -15,7 +15,6 @@ object User:
   import ChatBox.ChatBoxMessage
   case class UserId(id: String)
   case class UserMessage(userId: UserId, message: String, timestamp: Long) extends CborSerializable
-  case class History(messages: List[UserMessage]) extends CborSerializable
   def apply(userId: UserId, chatbox: ActorRef[ChatBoxMessage]): Behavior[String] =
     Behaviors.setup { context =>
       context.log.info(s"User ${userId.id} created")

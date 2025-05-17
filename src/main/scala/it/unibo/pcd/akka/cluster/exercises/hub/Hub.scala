@@ -72,32 +72,4 @@ object Hub:
       chatboxes: Map[Set[UserId], ActorRef[ChatBoxMessage]] = Map.empty
   ): Behavior[HubMessage] =
     Behaviors.receive: (context, message) =>
-      message match
-        case Login(userId) =>
-          val updatedUser = UserStatus(userId, UserState.Online())
-          val updatedUsers = users.filterNot(_.user == userId) :+ updatedUser
-          // Notify listeners about status change
-          listeners.foreach(_ ! updatedUser)
-          apply(updatedUsers, listeners, chatboxes)
-
-        case Logout(userId) =>
-          val updatedUser = UserStatus(userId, UserState.Offline())
-          val updatedUsers = users.filterNot(_.user == userId) :+ updatedUser
-          // Notify listeners about status change
-          listeners.foreach(_ ! updatedUser)
-          apply(updatedUsers, listeners, chatboxes)
-        case ChatWith(userIdA, userIdB, chatboxRef) =>
-          val userPair = Set(userIdA, userIdB)
-          chatboxes.get(userPair) match {
-            case Some(existingChatbox) =>
-              chatboxRef ! existingChatbox
-              apply(users, listeners, chatboxes)
-            case None =>
-              val newChatbox = context.spawnAnonymous(ChatBox())
-              chatboxRef ! newChatbox
-              apply(users, listeners, chatboxes + (userPair -> newChatbox))
-          }
-
-        case Register(listener) =>
-          users.foreach(listener ! _)
-          apply(users, listeners :+ listener, chatboxes)
+      Behaviors.same

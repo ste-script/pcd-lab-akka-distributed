@@ -47,6 +47,7 @@ import it.unibo.pcd.akka.cluster.example.CborSerializable
 object ChatBox:
   import User.*
 
+  case class History(messages: List[UserMessage]) extends CborSerializable
   sealed trait ChatBoxMessage extends CborSerializable
   object ChatBoxMessage:
     case class NewMessage(message: UserMessage) extends ChatBoxMessage
@@ -61,17 +62,4 @@ object ChatBox:
       listeners: List[ActorRef[UserMessage]] = List.empty
   ): Behavior[ChatBoxMessage] =
     Behaviors.receive: (context, message) =>
-      message match
-        case NewMessage(userMessage: UserMessage) =>
-          context.log.info(s"New message from ${userMessage.userId.id}: ${userMessage.message}")
-          val newHistory = history :+ userMessage
-          context.log.info(s"History updated: $newHistory")
-          listeners.foreach(_ ! userMessage)
-          ChatBox(newHistory, listeners)
-        case GetHistory(replyTo) =>
-          context.log.info(s"Sending history to ${replyTo.path.name}")
-          replyTo ! History(history)
-          Behaviors.same
-        case ListenNewMessages(replyTo) =>
-          context.log.info(s"Listening for new messages")
-          ChatBox(history, listeners :+ replyTo)
+      Behaviors.same // TODO
