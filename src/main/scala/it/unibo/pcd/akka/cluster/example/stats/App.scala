@@ -53,12 +53,12 @@ object App:
     ActorSystem[Nothing](RootBehavior(), "ClusterSystem", config)
 
   def main(args: Array[String]): Unit =
-    if (args.isEmpty) {
+    if (args.isEmpty)
       startup("compute", 25251)
       startup("compute", 25252)
       startup("compute", 0)
       startup("client", 0)
-    } else {
+    else
       require(args.size == 2, "Usage: role port")
       startup(args(0), args(1).toInt)
-    }
+    

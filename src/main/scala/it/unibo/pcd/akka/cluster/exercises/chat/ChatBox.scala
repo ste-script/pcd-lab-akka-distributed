@@ -1,0 +1,77 @@
+package it.unibo.pcd.akka.cluster.exercises.chat
+
+import akka.actor.typed.{ActorRef, Behavior}
+import akka.actor.typed.scaladsl.Behaviors
+import it.unibo.pcd.akka.cluster.example.CborSerializable
+
+/** The `ChatBox` actor is responsible for managing the messages within a specific, self-contained chat session,
+  * typically between two users. It maintains a history of messages exchanged in that session and allows other actors to
+  * listen for new messages as they arrive.
+  *
+  * ==Behavior==
+  *
+  * A `ChatBox` actor manages its state through two primary components:
+  *   - `history`: A `List[UserMessage]` that stores all messages sent within this chat session in chronological order.
+  *   - `listeners`: A `List[ActorRef[UserMessage]]` containing actors that have subscribed to receive new messages
+  *     posted to this `ChatBox` in real-time.
+  *
+  * The actor processes `ChatBoxMessage`s to interact with its state and other actors. State changes are handled by
+  * recursively calling its `apply` method with the updated state, ensuring immutability.
+  *
+  * ===Message Handling===
+  *
+  *   - **`NewMessage(userMessage: UserMessage)`**: When a `NewMessage` is received, it signifies a new message being
+  *     posted to this chat. The `ChatBox` actor performs the following actions:
+  *     1. Logs the content of the `userMessage` along with the sender's ID.
+  *        2. Appends the `userMessage` to its internal `history` list.
+  *        3. Notifies all currently registered `listeners` by sending each of them the `userMessage` that was just
+  *           received.
+  *        4. Continues its behavior with the updated `history` (now including the new message) and the same list of
+  *           `listeners`.
+  *   - **`GetHistory(replyTo: ActorRef[List[UserMessage]])`**: This message is a request from another actor (specified
+  *     by `replyTo`) to retrieve the entire conversation history of this `ChatBox`.
+  *     1. Logs that it is sending the history.
+  *        2. Sends the current `history` (a `List[UserMessage]`) as a message directly to the `replyTo` actor.
+  *        3. The internal state of the `ChatBox` (history and listeners) remains unchanged. It continues with
+  *           `Behaviors.same`, indicating no change in its behavior or state.
+  *   - **`ListenNewMessages(replyTo: ActorRef[UserMessage])`**: An actor sends this message to subscribe to new
+  *     messages posted in this `ChatBox`. The `replyTo` parameter is the `ActorRef` of the actor wishing to listen.
+  *     1. Logs that a new listener is being registered.
+  *        2. Adds the `replyTo` actor to its internal `listeners` list.
+  *        3. Continues its behavior with the same `history` but with the `listeners` list now including the new
+  *           subscriber. Any subsequent `NewMessage` will also be sent to this new listener.
+  *
+  * The `apply` method, taking `history` and `listeners` as parameters, defines the actor's behavior for processing
+  * these messages and managing its state for the chat session.
+  */
+object ChatBox:
+  import User.*
+
+  sealed trait ChatBoxMessage extends CborSerializable
+  object ChatBoxMessage:
+    case class NewMessage(message: UserMessage) extends ChatBoxMessage
+    case class GetHistory(to: ActorRef[History])
+        extends ChatBoxMessage // any actor whom is able to receive a List[UserMessage]
+    case class ListenNewMessages(replyTo: ActorRef[UserMessage]) extends ChatBoxMessage
+
+  import ChatBoxMessage.*
+
+  def apply(
+      history: List[UserMessage] = List.empty,
+      listeners: List[ActorRef[UserMessage]] = List.empty
+  ): Behavior[ChatBoxMessage] =
+    Behaviors.receive: (context, message) =>
+      message match
+        case NewMessage(userMessage: UserMessage) =>
+          context.log.info(s"New message from ${userMessage.userId.id}: ${userMessage.message}")
+          val newHistory = history :+ userMessage
+          context.log.info(s"History updated: $newHistory")
+          listeners.foreach(_ ! userMessage)
+          ChatBox(newHistory, listeners)
+        case GetHistory(replyTo) =>
+          context.log.info(s"Sending history to ${replyTo.path.name}")
+          replyTo ! History(history)
+          Behaviors.same
+        case ListenNewMessages(replyTo) =>
+          context.log.info(s"Listening for new messages")
+          ChatBox(history, listeners :+ replyTo)

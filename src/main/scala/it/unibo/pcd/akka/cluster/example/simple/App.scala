@@ -9,12 +9,11 @@ object App:
 
   object RootBehavior:
     // Our root actor does nothing beside spawning our ClusterListener actor
-    def apply(): Behavior[Nothing] = Behaviors.setup[Nothing] { context =>
+    def apply(): Behavior[Nothing] = Behaviors.setup[Nothing]: context =>
       // Create an actor that handles cluster domain events
       context.spawn(ClusterListener(), "ClusterListener")
 
       Behaviors.empty
-    }
 
   def main(args: Array[String]): Unit =
     val ports =

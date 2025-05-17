@@ -38,16 +38,16 @@ def configFrom(port: Int): Config = ConfigFactory
 
 @main def alice(): Unit =
   val config = configFrom(8080)
-  ActorSystem(greet("alice"), "foo", config)
+  ActorSystem(greet("alice"), "alice", config)
 
 @main def gianluca(): Unit =
-  anyGreet("gianluca", 8081)
+  anyGreet("gianluca", 8081, "alice")
 
-@main def anyGreet(who: String, port: Int): Unit =
+@main def anyGreet(who: String, port: Int, toWhom: String): Unit =
   given Timeout = 2 seconds // required for actorSelection.
-  val remoteReferencePath = "akka://foo@127.0.0.1:8080/user/"
+  val remoteReferencePath = s"akka://$toWhom@127.0.0.1:8080/user/"
   val config = configFrom(port)
-  val system = ClassicActorSystem.apply("foo", config)
+  val system = ClassicActorSystem.apply(who, config)
   val remoteReference = system.actorSelection(remoteReferencePath).resolveOne()
   for remote <- remoteReference do
     val actor = system.spawn(greeted(), who)
