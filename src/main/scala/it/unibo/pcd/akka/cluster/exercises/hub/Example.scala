@@ -8,18 +8,17 @@ import it.unibo.pcd.akka.cluster.exercises.hub.Hub.HubMessage
 import it.unibo.pcd.akka.cluster.exercises.hub.Hub.HubMessage.Login
 import it.unibo.pcd.akka.cluster.exercises.hub.gui.{HubPanel, UserStatusManager}
 
-object HubGui {
+object HubGui:
 
   /** Creates and returns a new HubPanel instance */
   def start(userId: UserId, session: ActorRef[ChatSessionSpawn.StartChat], hub: ActorRef[HubMessage]): HubPanel =
     new HubPanel(userId, session, hub, new UserStatusManager())
-}
 
 /** Main application entry point */
-object HubApplication {
+object HubApplication:
   def main(args: Array[String]): Unit = {
     // Get username from arguments or use default
-    val usernameA = "Mirko"
+    val usernameA = "Bibo"
     val usernameB = "Gianluca"
     // Create actor system with hub
     val system = ActorSystem[Unit](
@@ -39,4 +38,3 @@ object HubApplication {
       "hub-system"
     )
   }
-}

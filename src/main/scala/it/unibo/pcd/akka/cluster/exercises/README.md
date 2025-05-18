@@ -12,7 +12,7 @@ Exercises
   - Add tests to validate your implementation
   - Improve the current distribution strategy:
     - Avoid singleton pattern
-    - Implement using reception
+    - Implement using receptionist
 
 ## Exercise 2: Hub Implementation
 
@@ -24,4 +24,3 @@ Exercises
   - First implement using Singleton pattern
   - Then refactor to use reception
   - Add tests to validate your implementation
-```

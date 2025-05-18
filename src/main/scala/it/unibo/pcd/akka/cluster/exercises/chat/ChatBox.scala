@@ -20,26 +20,23 @@ import it.unibo.pcd.akka.cluster.example.CborSerializable
   *
   * ===Message Handling===
   *
-  *   - **`NewMessage(userMessage: UserMessage)`**: When a `NewMessage` is received, it signifies a new message being
+  *   - **`NewMessage(userMessage: UserMessage)`**: When a `NewMessage` is received, it means that a new message being
   *     posted to this chat. The `ChatBox` actor performs the following actions:
-  *     1. Logs the content of the `userMessage` along with the sender's ID.
-  *        2. Appends the `userMessage` to its internal `history` list.
-  *        3. Notifies all currently registered `listeners` by sending each of them the `userMessage` that was just
-  *           received.
-  *        4. Continues its behavior with the updated `history` (now including the new message) and the same list of
-  *           `listeners`.
+  *     1. Appends the `userMessage` to its internal `history` list.
+  *     2. Notifies all currently registered `listeners` by sending each of them the `userMessage` that was just
+  *        received.
+  *     3. Continues its behavior with the updated `history` (now including the new message) and the same list of
+  *        `listeners`.
   *   - **`GetHistory(replyTo: ActorRef[List[UserMessage]])`**: This message is a request from another actor (specified
   *     by `replyTo`) to retrieve the entire conversation history of this `ChatBox`.
-  *     1. Logs that it is sending the history.
-  *        2. Sends the current `history` (a `List[UserMessage]`) as a message directly to the `replyTo` actor.
-  *        3. The internal state of the `ChatBox` (history and listeners) remains unchanged. It continues with
-  *           `Behaviors.same`, indicating no change in its behavior or state.
+  *     1. Sends the current `history` (a `List[UserMessage]`) as a message directly to the `replyTo` actor.
+  *     2. The internal state of the `ChatBox` (history and listeners) remains unchanged. It continues with
+  *        `Behaviors.same`, indicating no change in its behavior or state.
   *   - **`ListenNewMessages(replyTo: ActorRef[UserMessage])`**: An actor sends this message to subscribe to new
   *     messages posted in this `ChatBox`. The `replyTo` parameter is the `ActorRef` of the actor wishing to listen.
-  *     1. Logs that a new listener is being registered.
-  *        2. Adds the `replyTo` actor to its internal `listeners` list.
-  *        3. Continues its behavior with the same `history` but with the `listeners` list now including the new
-  *           subscriber. Any subsequent `NewMessage` will also be sent to this new listener.
+  *     1. Adds the `replyTo` actor to its internal `listeners` list.
+  *     2. Continues its behavior with the same `history` but with the `listeners` list now including the new
+  *        subscriber. Any subsequent `NewMessage` will also be sent to this new listener.
   *
   * The `apply` method, taking `history` and `listeners` as parameters, defines the actor's behavior for processing
   * these messages and managing its state for the chat session.

@@ -22,21 +22,18 @@ class MessageBubble(msg: Message, currentUser: User) extends BoxPanel(Orientatio
   private val timeFormatter = new SimpleDateFormat("HH:mm")
 
   // Message content with reduced vertical spacing
-  contents += new Label(msg.content) {
+  contents += new Label(msg.content):
     font = new Font("Sans-Serif", Font.PLAIN, 14)
     xAlignment = Alignment.Left
-  }
 
   // Sender name
-  contents += new Label(if (isCurrentUser) "yourself" else msg.sender.name) {
+  contents += new Label(if (isCurrentUser) "yourself" else msg.sender.name):
     foreground = colors("time")
     font = new Font("Sans-Serif", Font.ITALIC, 11) // Small italic font
     xAlignment = if (isCurrentUser) Alignment.Right else Alignment.Left
-  }
 
   // Timestamp with reduced font size
-  contents += new Label(timeFormatter.format(msg.timestamp)) {
+  contents += new Label(timeFormatter.format(msg.timestamp)):
     foreground = colors("time")
     font = new Font("Sans-Serif", Font.ITALIC, 9) // Smaller font
     xAlignment = if (isCurrentUser) Alignment.Right else Alignment.Left
-  }
