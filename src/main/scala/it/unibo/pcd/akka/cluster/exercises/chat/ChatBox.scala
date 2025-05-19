@@ -59,4 +59,18 @@ object ChatBox:
       listeners: List[ActorRef[UserMessage]] = List.empty
   ): Behavior[ChatBoxMessage] =
     Behaviors.receive: (context, message) =>
-      Behaviors.same // TODO
+      message match
+        case NewMessage(userMessage) =>
+          context.log.info(s"New message: $userMessage")
+          val updatedHistory = history :+ userMessage
+          listeners.foreach(_ ! userMessage)
+          apply(updatedHistory, listeners)
+        case GetHistory(replyTo) =>
+          context.log.info(s"History requested by: $replyTo")
+          replyTo ! History(history)
+          Behaviors.same
+        case ListenNewMessages(replyTo) =>
+          context.log.info(s"New listener: $replyTo")
+          val updatedListeners = replyTo :: listeners
+          apply(history, updatedListeners)
+
