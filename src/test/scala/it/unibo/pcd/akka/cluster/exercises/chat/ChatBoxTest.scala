@@ -1,5 +1,6 @@
 package it.unibo.pcd.akka.cluster.exercises.chat
 import akka.actor.testkit.typed.scaladsl.{BehaviorTestKit, TestInbox}
+import it.unibo.pcd.akka.cluster.exercises.chat.ChatBox.History
 import org.scalatest.funsuite.AnyFunSuite
 
 class ChatBoxTest extends AnyFunSuite:
