@@ -72,4 +72,31 @@ object Hub:
       chatboxes: Map[Set[UserId], ActorRef[ChatBoxMessage]] = Map.empty
   ): Behavior[HubMessage] =
     Behaviors.receive: (context, message) =>
-      Behaviors.same
+      message match
+        case Login(userId) =>
+          context.log.info(s"User $userId logged in")
+          val updatedUsers = users.filterNot(_.user == userId) :+ UserStatus(userId, UserState.Online())
+          listeners.foreach(_ ! updatedUsers.last)
+          apply(updatedUsers, listeners, chatboxes)
+
+        case Logout(userId) =>
+          context.log.info(s"User $userId logged out")
+          val updatedUsers = users.filterNot(_.user == userId) :+ UserStatus(userId, UserState.Offline())
+          listeners.foreach(_ ! UserStatus(userId, UserState.Offline()))
+          apply(updatedUsers, listeners, chatboxes)
+
+        case ChatWith(userIdA, userIdB, chatBox) =>
+          context.log.info(s"Requesting chat box for users $userIdA and $userIdB")
+          val userPair = Set(userIdA, userIdB)
+          val chatBoxRef = chatboxes.getOrElse(userPair, context.spawnAnonymous(ChatBox()))
+          val updatedChatboxes = chatboxes + (userPair -> chatBoxRef)
+          chatBox ! chatBoxRef
+          context.log.info(s"Chat box for users $userIdA and $userIdB is ready: $chatBoxRef")
+          apply(users, listeners, updatedChatboxes)
+
+        case Register(listener) =>
+          context.log.info(s"Registering listener: ${listener.path.name}")
+          // register new user
+          val updatedListeners = listener :: listeners
+          users.foreach(user => listener ! user)
+          apply(users, updatedListeners, chatboxes)

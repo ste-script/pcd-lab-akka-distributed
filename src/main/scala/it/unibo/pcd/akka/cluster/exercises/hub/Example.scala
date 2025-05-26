@@ -31,8 +31,6 @@ object HubApplication:
         hubGuiA.initialize(context)
         val hubGuiB = HubGui.start(UserId(usernameB), session, hub)
         hubGuiB.initialize(context)
-        hub ! Login(UserId(usernameA))
-        hub ! Login(UserId(usernameB))
         Behaviors.empty
       },
       "hub-system"
