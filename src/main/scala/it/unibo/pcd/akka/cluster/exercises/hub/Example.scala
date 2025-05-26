@@ -24,7 +24,7 @@ object HubApplication:
     val system = ActorSystem[Unit](
       Behaviors.setup { context =>
         // Create the hub actor
-        val hub = context.spawn(Hub(), "hub")
+        val hub = context.spawn(Hub(), "hub") //todo implement Hub with signleton in gui initialization
         val session = context.spawn(ChatSessionSpawn(), "chat-session-manager")
         // Create and initialize the hub GUI
         val hubGuiA = HubGui.start(UserId(usernameA), session, hub)
